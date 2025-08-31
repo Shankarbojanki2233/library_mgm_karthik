@@ -1,0 +1,37 @@
+[
+  {
+    "id": "1",
+    "name": "Computer Science",
+    "subCategories": ["Programming", "Database", "Security", "AI/ML", "Web Development"],
+    "code": "CS",
+    "description": "Books related to computer science and information technology"
+  },
+  {
+    "id": "2",
+    "name": "Mathematics",
+    "subCategories": ["Engineering Math", "Statistics", "Discrete Math", "Calculus"],
+    "code": "MATH",
+    "description": "Mathematical concepts and applications for engineering"
+  },
+  {
+    "id": "3",
+    "name": "Electronics",
+    "subCategories": ["Digital Systems", "Analog Circuits", "Communication", "Control Systems"],
+    "code": "ECE",
+    "description": "Electronic engineering and communication technologies"
+  },
+  {
+    "id": "4",
+    "name": "Mechanical Engineering",
+    "subCategories": ["Design", "Thermodynamics", "Materials", "Manufacturing"],
+    "code": "MECH",
+    "description": "Mechanical engineering principles and applications"
+  },
+  {
+    "id": "5",
+    "name": "Civil Engineering",
+    "subCategories": ["Structures", "Materials", "Surveying", "Environmental"],
+    "code": "CIVIL",
+    "description": "Civil engineering and construction technology"
+  }
+]

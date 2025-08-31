@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "userId": "1",
+    "bookId": "1",
+    "type": "borrow",
+    "borrowDate": "2024-01-15",
+    "dueDate": "2024-01-30",
+    "returnDate": null,
+    "status": "borrowed",
+    "fineAmount": 0,
+    "renewalCount": 0
+  },
+  {
+    "id": "2",
+    "userId": "2",
+    "bookId": "3",
+    "type": "borrow",
+    "borrowDate": "2024-01-10",
+    "dueDate": "2024-01-25",
+    "returnDate": "2024-01-28",
+    "status": "returned",
+    "fineAmount": 3,
+    "renewalCount": 0
+  },
+  {
+    "id": "3",
+    "userId": "2",
+    "bookId": "5",
+    "type": "borrow",
+    "borrowDate": "2024-01-20",
+    "dueDate": "2024-02-04",
+    "returnDate": null,
+    "status": "overdue",
+    "fineAmount": 22,
+    "renewalCount": 1
+  }
+]
