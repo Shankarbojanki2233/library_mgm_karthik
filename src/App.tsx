@@ -7,7 +7,7 @@ import { UsersTab } from './components/UsersTab';
 import { AnalyticsTab } from './components/AnalyticsTab';
 import { CategoriesTab } from './components/CategoriesTab';
 import { LoginForm } from './components/LoginForm';
-import { useLibraryData } from './hooks/useLibraryData';
+import { useApiData } from './hooks/useApiData';
 import { FineCalculator } from './utils/fineCalculator';
 import { User, Book, Category, Transaction } from './types';
 import { FilePersistence } from './utils/filePersistence';
@@ -26,7 +26,25 @@ function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState('welcome');
   const [renderCount, setRenderCount] = useState(0);
-  const { books, users, categories, transactions, loading, addTransaction, updateUserFines } = useLibraryData();
+  const { 
+    books, 
+    users, 
+    categories, 
+    transactions, 
+    loading, 
+    error,
+    borrowBook,
+    returnBook,
+    addBook,
+    updateBook,
+    deleteBook,
+    addUser,
+    updateUser,
+    deleteUser,
+    addCategory,
+    updateCategory,
+    deleteCategory
+  } = useApiData();
 
   // Performance monitoring
   useEffect(() => {
@@ -50,39 +68,28 @@ function App() {
   const handleBorrowBook = useCallback((bookId: string) => {
     if (!currentUser) return;
 
-    const borrowDate = new Date().toISOString().split('T')[0];
-    const dueDate = FineCalculator.calculateDueDate(borrowDate);
-
-    const transaction: Omit<Transaction, 'id'> = {
-      userId: currentUser.id,
-      bookId,
-      type: 'borrow',
-      borrowDate,
-      dueDate,
-      returnDate: null,
-      status: 'borrowed',
-      fineAmount: 0,
-      renewalCount: 0
-    };
-
-    addTransaction(transaction);
-    alert('Book borrowed successfully! Please return within 15 days.');
-  }, [currentUser, addTransaction]);
+    borrowBook(bookId, currentUser.id)
+      .then((result) => {
+        alert(`Book borrowed successfully! Due date: ${result.due_date}`);
+      })
+      .catch((err) => {
+        alert(`Failed to borrow book: ${err.message}`);
+      });
+  }, [currentUser, borrowBook]);
 
   const handleReturnBook = useCallback((transactionId: string) => {
-    const transaction = transactions.find(t => t.id === transactionId);
-    if (!transaction) return;
-
-    const returnDate = new Date().toISOString().split('T')[0];
-    const fine = FineCalculator.calculateFine(transaction.dueDate, returnDate);
-
-    if (fine > 0) {
-      updateUserFines(transaction.userId, fine);
-      alert(`Book returned with fine: ₹${fine}. Please pay at the library counter.`);
-    } else {
-      alert('Book returned successfully!');
-    }
-  }, [transactions, updateUserFines]);
+    returnBook(transactionId)
+      .then((result) => {
+        if (result.fine_amount > 0) {
+          alert(`Book returned with fine: ₹${result.fine_amount}. Please pay at the library counter.`);
+        } else {
+          alert('Book returned successfully!');
+        }
+      })
+      .catch((err) => {
+        alert(`Failed to return book: ${err.message}`);
+      });
+  }, [returnBook]);
 
   if (loading) {
     return (
@@ -90,6 +97,28 @@ function App() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading library data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Connection Error</h2>
+          <p className="text-gray-600 mb-4">Failed to connect to the Django backend server.</p>
+          <p className="text-sm text-gray-500 mb-4">Error: {error}</p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left max-w-md">
+            <h3 className="font-medium text-blue-800 mb-2">To start the Django server:</h3>
+            <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+              <li>Open a new terminal</li>
+              <li>Run: <code className="bg-blue-100 px-1 rounded">python backend/run_server.py</code></li>
+              <li>Wait for the server to start</li>
+              <li>Refresh this page</li>
+            </ol>
+          </div>
         </div>
       </div>
     );
@@ -150,11 +179,22 @@ function App() {
               books={books}
               categories={categories}
               onBorrowBook={handleBorrowBook}
+              onAddBook={addBook}
+              onUpdateBook={updateBook}
+              onDeleteBook={deleteBook}
               userRole={currentUser.role}
             />
         );
       case 'categories':
-        return <MemoizedCategoriesTab categories={categories} books={books} />;
+        return (
+          <MemoizedCategoriesTab 
+            categories={categories} 
+            books={books}
+            onAddCategory={addCategory}
+            onUpdateCategory={updateCategory}
+            onDeleteCategory={deleteCategory}
+          />
+        );
       case 'borrowed':
         return (
           <MemoizedBorrowedBooksTab
@@ -166,7 +206,12 @@ function App() {
         );
       case 'users':
         return currentUser.role === 'admin' ? (
-          <MemoizedUsersTab users={users} onUpdateUser={() => {}} />
+          <MemoizedUsersTab 
+            users={users} 
+            onAddUser={addUser}
+            onUpdateUser={updateUser}
+            onDeleteUser={deleteUser}
+          />
         ) : (
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold text-red-600">Access Denied</h2>
